@@ -4,7 +4,8 @@ from settings import *
 from player import Player
 from pygame.math import Vector2 as vector
 from pytmx.util_pygame import load_pygame
-from sprite import Sprite
+from sprite import Sprite, Bullet
+from monster import Coffin, Cactus
 
 
 class AllSprites(pygame.sprite.Group):
@@ -31,11 +32,16 @@ class Game:
         self.display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption('Western')
         self.clock = pygame.time.Clock()
+        self.bullet_surf = pygame.image.load("./graphics/other/particle.png").convert_alpha()
 
         # groups
         self.all_sprites = AllSprites()
         self.obstacles = pygame.sprite.Group()
+        self.bullets = pygame.sprite.Group()
         self.setup()
+
+    def create_bullet(self, pos, direction):
+        Bullet(pos, direction, self.bullet_surf, [self.all_sprites, self.bullets])
 
     def setup(self):
         tmx_map = load_pygame("./data/map.tmx")
@@ -48,7 +54,11 @@ class Game:
 
         for obj in tmx_map.get_layer_by_name('Entities'):
             if obj.name == 'Player':
-                self.player = Player((obj.x, obj.y), self.all_sprites, PATHS['player'], self.obstacles)
+                self.player = Player((obj.x, obj.y), self.all_sprites, PATHS['player'], self.obstacles, self.create_bullet)
+            if obj.name == 'Coffin':
+                self.coffin = Coffin((obj.x, obj.y), self.all_sprites, PATHS['coffin'], self.obstacles)
+            if obj.name == 'Cactus':
+                self.coffin = Cactus((obj.x, obj.y), self.all_sprites, PATHS['cactus'], self.obstacles)
 
 
     def run(self):
