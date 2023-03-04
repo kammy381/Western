@@ -20,6 +20,9 @@ class Player(pygame.sprite.Sprite):
         self.hitbox = self.rect.inflate(0, - self.rect.height/2)
         self.collision_sprites = collision_sprites
 
+        # attacking or not
+        self.attacking = False
+
     def import_assets(self, path):
         self.animations = {}
 
@@ -34,25 +37,42 @@ class Player(pygame.sprite.Sprite):
                     key = folder[0].split("\\")[1]
                     self.animations[key].append(surf)
 
+    def get_status(self):
+        # idle
+        if self.direction.x == 0 and self.direction.y == 0:
+            self.status = self.status.split('_')[0] + '_idle'
+
+        # attacking
+        if self.attacking:
+            self.status = self.status.split('_')[0] + '_attack'
+
     def input(self):
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_RIGHT]:
-            self.direction.x = 1
-            self.status = 'right'
-        elif keys[pygame.K_LEFT]:
-            self.direction.x = -1
-            self.status = 'left'
-        else:
-            self.direction.x = 0
 
-        if keys[pygame.K_UP]:
-            self.direction.y = -1
-            self.status = 'up'
-        elif keys[pygame.K_DOWN]:
-            self.direction.y = 1
-            self.status = 'down'
-        else:
-            self.direction.y = 0
+        if not self.attacking:
+            if keys[pygame.K_RIGHT]:
+                self.direction.x = 1
+                self.status = 'right'
+            elif keys[pygame.K_LEFT]:
+                self.direction.x = -1
+                self.status = 'left'
+            else:
+                self.direction.x = 0
+
+            if keys[pygame.K_UP]:
+                self.direction.y = -1
+                self.status = 'up'
+            elif keys[pygame.K_DOWN]:
+                self.direction.y = 1
+                self.status = 'down'
+            else:
+                self.direction.y = 0
+
+            if keys[pygame.K_SPACE]:
+                self.attacking = True
+                self.direction = vector()
+                self.frame_index = 0
+
 
     def animate(self, dt):
         current_animation = self.animations[self.status]
@@ -60,6 +80,8 @@ class Player(pygame.sprite.Sprite):
         self.frame_index += 7 * dt
         if self.frame_index >= len(current_animation):
             self.frame_index = 0
+            if self.attacking:
+                self.attacking = False
         self.image = current_animation[int(self.frame_index)]
 
     def move(self, dt):
@@ -79,5 +101,6 @@ class Player(pygame.sprite.Sprite):
 
     def update(self, dt):
         self.input()
+        self.get_status()
         self.move(dt)
         self.animate(dt)
