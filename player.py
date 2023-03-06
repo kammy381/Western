@@ -1,4 +1,5 @@
 import pygame
+import sys
 from pygame.math import Vector2 as vector
 from entity import Entity
 
@@ -66,6 +67,12 @@ class Player(Entity):
             if self.attacking:
                 self.attacking = False
         self.image = current_animation[int(self.frame_index)]
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def check_death(self):
+        if self.health <= 0:
+            pygame.quit()
+            sys.exit()
 
     def update(self, dt):
         self.input()
@@ -73,3 +80,5 @@ class Player(Entity):
         self.move(dt)
         self.animate(dt)
         self.vulnerability_timer()
+        self.check_death()
+        self.blink()
